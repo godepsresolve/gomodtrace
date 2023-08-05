@@ -2,6 +2,63 @@
 
 Utility is intended to trace some dependency sub-graphs for Go projects.
 
+# Installation
+
+Run
+`go install github.com/godepsresolve/gomodtrace/cmd/gomodtrace@latest`
+
+# Usage
+
+```
+go mod graph | gomodtrace [OPTION]... PARENT_PACKAGE DEPENDENT_PACKAGE
+-v	use verbose mode
+```
+
+Let's try to trace usages of vulnerable [gogo/protobuf](https://github.com/gogo/protobuf/)
+library ([cve-2021-3121](https://nvd.nist.gov/vuln/detail/cve-2021-3121)) in [ory/hydra](https://github.com/ory/hydra)
+well-known project.
+
+## Usage of gomodtrace without modgraphviz
+
+```shell
+$ cd github.com/ory/hydra
+$ go mod graph | gomodtrace github.com/ory/hydra/v2 github.com/gogo/protobuf@v1.1.1
+github.com/ory/hydra/v2 github.com/ory/x@v0.0.574
+github.com/ory/hydra/v2 github.com/prometheus/client_golang@v1.13.0
+github.com/ory/hydra/v2 github.com/prometheus/common@v0.37.0
+github.com/ory/x@v0.0.574 github.com/prometheus/client_golang@v1.13.0
+github.com/ory/x@v0.0.574 github.com/prometheus/common@v0.37.0
+github.com/prometheus/client_golang@v1.13.0 github.com/prometheus/common@v0.37.0
+github.com/prometheus/common@v0.37.0 github.com/prometheus/client_golang@v1.12.1
+github.com/prometheus/client_golang@v1.12.1 github.com/prometheus/common@v0.32.1
+github.com/prometheus/common@v0.32.1 github.com/prometheus/client_golang@v1.11.0
+github.com/prometheus/client_golang@v1.11.0 github.com/prometheus/common@v0.26.0
+github.com/prometheus/common@v0.26.0 github.com/prometheus/client_golang@v1.7.1
+github.com/prometheus/client_golang@v1.7.1 github.com/prometheus/common@v0.10.0
+github.com/prometheus/common@v0.10.0 github.com/prometheus/client_golang@v1.0.0
+github.com/prometheus/client_golang@v1.0.0 github.com/prometheus/common@v0.4.1
+github.com/prometheus/common@v0.4.1 github.com/gogo/protobuf@v1.1.1
+
+```
+
+## Usage of gomodtrace with modgraphviz:
+
+```shell
+$ cd github.com/ory/hydra
+$ go mod graph | gomodtrace github.com/ory/hydra/v2 github.com/gogo/protobuf@v1.1.1 | modgraphviz | dot -Tsvg -o graph_modg.svg
+```
+
+Then open graph_modg.svg with your favorite image viewer.
+![modgraphviz graph image](/assets/images/graph_modg.svg)
+
+So, it's really cool to see such compact output/image for such a big input graph:
+
+```
+$ cd github.com/ory/hydra
+$ go mod graph | wc -l
+4712
+```
+
 # Problem context
 
 "Big" projects in Go could have a lot of dependencies.
@@ -20,9 +77,9 @@ So no help will come from there.
 It also worth understanding that `go mod why` could return something like:
 
 ```
-$ go mod why github.com/gogo/protobuf@v1.2.1
-# github.com/gogo/protobuf@v1.2.1
-(main module does not need package github.com/gogo/protobuf@v1.2.1)
+$ go mod why github.com/gogo/protobuf@v1.1.1
+# github.com/gogo/protobuf@v1.1.1
+(main module does not need package github.com/gogo/protobuf@v1.1.1)
 ```
 
 because it not a direct dependency or MVS (minimal version selection) choose another version
