@@ -5,7 +5,9 @@ Utility is intended to trace some dependency sub-graphs for Go projects.
 # Installation
 
 Run
-`go install github.com/godepsresolve/gomodtrace/cmd/gomodtrace@latest`
+```
+go install github.com/godepsresolve/gomodtrace/cmd/gomodtrace@latest
+```
 
 # Usage
 
