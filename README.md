@@ -86,7 +86,7 @@ $ go mod why github.com/gogo/protobuf@v1.1.1
 
 because it not a direct dependency or MVS (minimal version selection) choose another version
 of vulnerable lib. You can check this in widely known and widely
-used [sql-migrate project](https://github.com/rubenv/sql-migrate/tree/9e20e0b824edc2b83a3ecc1c3219421f8b23516b).
+used [hydra project](https://github.com/ory/hydra/tree/339bf40e189e5285f7a8b9c7daa184ac00d0110f).
 
 # Solution
 
