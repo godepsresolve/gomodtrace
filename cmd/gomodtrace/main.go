@@ -15,6 +15,19 @@ func tracePaths(parent, target string) {
 	input := readInput()
 	graph := gomodtrace.ParseGraph(input)
 	index := gomodtrace.BuildGraphIndex(graph)
+	if _, ok := index[parent]; !ok {
+		fmt.Println(
+			fmt.Sprintf("No parent package: '%s' found in package index, check input", parent),
+		)
+		return
+	}
+	if _, ok := index[target]; !ok {
+		fmt.Println(
+			fmt.Sprintf("No target package: '%s' found in package index, check input", target),
+		)
+		return
+	}
+
 	paths := index.FindPaths(parent, target, nil)
 	log.Printf("%v\n", paths)
 	involvedLibraries := paths.ListInvolvedLibraries()
