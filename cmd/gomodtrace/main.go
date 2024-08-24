@@ -11,20 +11,18 @@ import (
 	"github.com/godepsresolve/gomodtrace"
 )
 
+const minimalRatio = 0.9
+
 func tracePaths(parent, target string) {
 	input := readInput()
 	graph := gomodtrace.ParseGraph(input)
 	index := gomodtrace.BuildGraphIndex(graph)
 	if _, ok := index[parent]; !ok {
-		fmt.Println(
-			fmt.Sprintf("No parent package: '%s' found in package index, check input", parent),
-		)
+		fmt.Println(prepareExtendedMessage(index, minimalRatio, parent, "parent"))
 		return
 	}
 	if _, ok := index[target]; !ok {
-		fmt.Println(
-			fmt.Sprintf("No target package: '%s' found in package index, check input", target),
-		)
+		fmt.Println(prepareExtendedMessage(index, minimalRatio, target, "target"))
 		return
 	}
 
@@ -32,6 +30,51 @@ func tracePaths(parent, target string) {
 	log.Printf("%v\n", paths)
 	involvedLibraries := paths.ListInvolvedLibraries()
 	fmt.Println(graph.WithOnly(involvedLibraries))
+}
+
+// stringMatchRatio calculates match ratio between two strings.
+func stringMatchRatio(a, b string) float64 {
+	if a == b {
+		return 1.0
+	}
+
+	minLenSequence := min(len(a), len(b))
+	if minLenSequence == 0 {
+		return 0
+	}
+
+	found := float64(0)
+	for i := 0; i < minLenSequence; i++ {
+		if a[i] == b[i] {
+			found++
+		}
+	}
+
+	return found / float64(minLenSequence)
+}
+
+// prepareExtendedMessage prepares an extended message based on the
+// string matching ratio.
+func prepareExtendedMessage(
+	index gomodtrace.NodeIndex,
+	minRatio float64,
+	element,
+	elementType string,
+) string {
+	message := "check input"
+	for k := range index {
+		if stringMatchRatio(k, element) > minRatio {
+			message = fmt.Sprintf("did you mean '%s'?", k)
+			break
+		}
+	}
+
+	return fmt.Sprintf(
+		"No %s package: '%s' found in package index, %s",
+		elementType,
+		element,
+		message,
+	)
 }
 
 func readInput() []string {
